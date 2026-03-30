@@ -4,12 +4,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        aison: '#1B4F72',
-        'aison-light': '#2E86C1',
-        'aison-accent': '#F39C12',
+        vimpl: {
+          DEFAULT: '#65c434',
+          dark:    '#3d7a1f',
+          light:   '#a3e085',
+        },
+        craft: {
+          DEFAULT: '#E67E22',
+          dark:    '#CA6F1E',
+          light:   '#F0A500',
+        },
       },
     },
   },
   plugins: [],
-}
-
+};
