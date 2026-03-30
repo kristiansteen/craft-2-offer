@@ -4,7 +4,10 @@ import Panel2Efterse from './components/Panel2Efterse.jsx';
 import Panel3Tilbud from './components/Panel3Tilbud.jsx';
 import Panel4Koordiner from './components/Panel4Koordiner.jsx';
 import Panel5Projektplan from './components/Panel5Projektplan.jsx';
+import BurgerMenu from './components/BurgerMenu.jsx';
 import { analyzeJob, generateOffer, generateProjectPlan } from './services/craftService.js';
+import { useAileanInterviewer } from './hooks/useAileanInterviewer.js';
+import { useVoiceRecorder } from './hooks/useVoiceRecorder.js';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'craft2offer_vimpl_config';
@@ -77,6 +80,7 @@ function getCarouselStyle(n, activePanel) {
 export default function App() {
   // ── Auth ─────────────────────────────────────────────────────────────────
   const [loggedOut, setLoggedOut] = useState(false);
+  const [showBurger, setShowBurger] = useState(false);
   const [vimplToken, setVimplToken] = useState(() => {
     try {
       const urlToken = new URLSearchParams(window.location.search).get('token');
@@ -131,7 +135,7 @@ export default function App() {
   // ── Carousel ──────────────────────────────────────────────────────────────
   const [activePanel, setActivePanel] = useState(1);
 
-  // ── Job state ─────────────────────────────────────────────────────────────
+  // ── Job state — input declared first so recorder can reference setInput ──
   const saveTimer = useRef(null);
   const [input, setInput] = useState(() => {
     try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}').input || ''; } catch { return ''; }
@@ -154,6 +158,11 @@ export default function App() {
   const [generatingPlan, setGeneratingPlan] = useState(false);
   const [boardUrl, setBoardUrl] = useState(null);
   const [boardId, setBoardId] = useState(null);
+
+  // ── Ailean + voice recorder ───────────────────────────────────────────────
+  const ailean = useAileanInterviewer({ proxyAuth: vimplToken ? { token: vimplToken } : null });
+  const { isRecording, interimText, error: recorderError, supported: recorderSupported, start: startRecording, stop: stopRecording } =
+    useVoiceRecorder({ lang: 'da', onTranscriptUpdate: (text) => setInput(text) });
 
   // ── Auto-save draft to localStorage ──────────────────────────────────────
   useEffect(() => {
@@ -268,22 +277,20 @@ export default function App() {
           href="https://www.vimpl.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+          className="ailean-badge"
         >
           <span>Powered by</span>
-          <span className="font-bold text-lg leading-none text-craft" style={{ fontFamily: 'Georgia, serif' }}>vimpl</span>
+          <span className="vimpl-wordmark" style={{ fontSize: '32px', lineHeight: 1 }}>vimpl</span>
         </a>
-        <div className="flex items-center gap-3">
-          {vimplUser && (
-            <span className="text-xs text-gray-400 hidden sm:block">{vimplUser.email}</span>
-          )}
-          <button
-            onClick={logout}
-            className="text-xs text-gray-400 hover:text-red-400 border border-gray-200 rounded-lg px-2 py-1 transition-colors"
-          >
-            Log ud
-          </button>
-        </div>
+        <button
+          onClick={() => setShowBurger(true)}
+          className="flex flex-col gap-1 items-center justify-center w-9 h-9 rounded-lg bg-gray-100 border border-gray-200 hover:bg-gray-200 hover:border-craft transition-colors"
+          title="Menu"
+        >
+          <span className="w-4 h-0.5 bg-gray-500 rounded" />
+          <span className="w-4 h-0.5 bg-gray-500 rounded" />
+          <span className="w-4 h-0.5 bg-gray-500 rounded" />
+        </button>
       </header>
 
       {/* Step navigator */}
@@ -349,6 +356,12 @@ export default function App() {
               loading={analyzing}
               error={analyzeError}
               canAnalyze={!!input.trim() && !!vimplToken}
+              ailean={ailean}
+              isRecording={isRecording}
+              interimText={interimText}
+              recorderSupported={recorderSupported}
+              onRecord={() => isRecording ? stopRecording() : startRecording(input)}
+              onAileanTurn={() => ailean.askFollowUp(input)}
             />
           </PanelShell>
           {activePanel !== 1 && <div className="absolute inset-0 bg-slate-100/20 pointer-events-none" />}
@@ -420,6 +433,15 @@ export default function App() {
         </div>
 
       </div>
+
+      <BurgerMenu
+        open={showBurger}
+        onClose={() => setShowBurger(false)}
+        vimplUser={vimplUser}
+        onLogout={logout}
+        onNewProject={clearDraft}
+        hasActiveProject={!!(input || offerLines)}
+      />
     </div>
   );
 }

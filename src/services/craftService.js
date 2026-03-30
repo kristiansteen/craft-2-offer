@@ -31,6 +31,22 @@ function parseJson(text) {
   return JSON.parse(cleaned);
 }
 
+// ── getCraftFollowUp ──────────────────────────────────────────────────────────
+// Ailean interviewer follow-up for construction job scoping
+export async function getCraftFollowUp(transcript, history, proxyAuth) {
+  const system = `Du er Ailean, en erfaren byggesagkyndig der hjælper håndværkere med at afdække jobdetaljer.
+Stil ét kort, præcist opfølgningsspørgsmål på dansk for at afklare omfang, mål eller materialer.
+Returner KUN spørgsmålet — ingen introduktion, ingen forklaring.`;
+
+  const messages = [
+    ...history,
+    { role: 'user', content: `Jobbeskrivelse hidtil:\n${transcript}` },
+  ];
+
+  const text = await callClaude({ system, messages, maxTokens: 200 }, proxyAuth);
+  return text.trim();
+}
+
 // ── analyzeJob ────────────────────────────────────────────────────────────────
 // Input: free-form job description (Danish or English)
 // Returns: { title, scope, trades[], measurements[], materials[], risks[] }

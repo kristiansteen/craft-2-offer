@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --vimpl-primary: #65c434;
+  --vimpl-secondary: #a3e085;
+}
+
 @layer base {
   body {
     @apply bg-slate-100 text-gray-900 antialiased;
@@ -28,4 +33,38 @@
   .btn-sm {
     @apply px-3 py-1.5 rounded-lg text-xs font-medium transition-colors;
   }
+}
+
+.ailean-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  background: rgba(101, 196, 52, 0.08);
+  border: 1px solid rgba(101, 196, 52, 0.25);
+  padding: 6px 14px;
+  border-radius: 50px;
+  transition: all 0.2s ease;
+}
+.ailean-badge:hover {
+  background: rgba(101, 196, 52, 0.15);
+  border-color: rgba(101, 196, 52, 0.5);
+}
+.ailean-badge span:first-child {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.vimpl-wordmark {
+  font-family: 'Birthstone', cursive;
+  font-size: 32px;
+  font-weight: 400;
+  background: linear-gradient(135deg, var(--vimpl-primary) 0%, var(--vimpl-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
+  line-height: 1;
 }
