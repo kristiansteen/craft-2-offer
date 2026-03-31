@@ -83,16 +83,27 @@ export default function App() {
   const [showBurger, setShowBurger] = useState(false);
   const [vimplToken, setVimplToken] = useState(() => {
     try {
-      const urlToken = new URLSearchParams(window.location.search).get('token');
-      if (urlToken) {
-        const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...existing, token: urlToken }));
-        window.history.replaceState(null, '', window.location.pathname);
-        return urlToken;
-      }
       return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}').token || null;
     } catch { return null; }
   });
+
+  // Exchange one-time ?code= for JWT on first load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (!code) return;
+    window.history.replaceState(null, '', window.location.pathname);
+    fetch(`${BACKEND_URL}/api/v1/auth/exchange-code?code=${encodeURIComponent(code)}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.token) {
+          const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...existing, token: data.token }));
+          setVimplToken(data.token);
+        }
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [vimplUser, setVimplUser] = useState(null);
 
   function refreshVimplUser(token) {
