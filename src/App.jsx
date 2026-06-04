@@ -13,6 +13,7 @@ import { useAisonInterviewer } from './hooks/useAisonInterviewer.js';
 import { useVoiceRecorder } from './hooks/useVoiceRecorder.js';
 import { fetchProjects, upsertProject, deleteProject as apiDeleteProject } from './services/projectService.js';
 import { BACKEND_URL } from './lib/api.js';
+import CookieBanner from './components/CookieBanner.jsx';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const STORAGE_KEY  = 'craft2offer_vimpl_config';
@@ -463,6 +464,7 @@ export default function App() {
           onNewProject={handleCreateProject}
           onOverview={handleBackToDashboard}
         />
+        <CookieBanner />
       </>
     );
   }
@@ -630,6 +632,7 @@ export default function App() {
         onNewProject={handleCreateProject}
         onOverview={handleBackToDashboard}
       />
+      <CookieBanner />
     </div>
   );
 }

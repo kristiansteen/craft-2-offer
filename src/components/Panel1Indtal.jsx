@@ -12,37 +12,18 @@ async function pasteFromClipboard() {
 export default function Panel1Indtal({
   input, setInput,
   onAnalyze, loading, error, canAnalyze,
-  ailean, isRecording, interimText, recorderSupported, onRecord, onAileanTurn,
+  aison, isRecording, interimText, recorderSupported, onRecord,
 }) {
   const [pasteFlash, setPasteFlash] = useState(false);
+  const [confirmRyd, setConfirmRyd] = useState(false);
   const textareaRef = useRef(null);
 
-  const aileanActive  = ailean?.enabled;
-  const aileanBusy    = ailean?.thinking || ailean?.speaking;
-  const aileanTurns   = ailean?.turns || [];
-  const currentDraft  = aileanActive ? input.slice(ailean?.prevTranscriptLength || 0) : '';
+  const aisonActive  = aison?.enabled;
+  const aisonBusy    = aison?.thinking || aison?.speaking;
+  const aisonTurns   = aison?.turns || [];
+  const currentDraft  = aisonActive ? input.slice(aison?.prevTranscriptLength || 0) : '';
 
-  // Auto-start recording after Ailean finishes speaking
-  const aileanWasBusy = useRef(false);
-  useEffect(() => {
-    if (!aileanActive) { aileanWasBusy.current = false; return; }
-    if (aileanBusy) { aileanWasBusy.current = true; return; }
-    if (aileanWasBusy.current && !isRecording) {
-      aileanWasBusy.current = false;
-      onRecord?.();
-    }
-  }, [aileanBusy, aileanActive, isRecording]); // eslint-disable-line
-
-  // Trigger Ailean follow-up when recording stops
-  const wasRecordingRef = useRef(false);
-  useEffect(() => {
-    if (!aileanActive) { wasRecordingRef.current = false; return; }
-    if (isRecording) { wasRecordingRef.current = true; return; }
-    if (wasRecordingRef.current) {
-      wasRecordingRef.current = false;
-      setTimeout(() => onAileanTurn?.(), 400);
-    }
-  }, [isRecording, aileanActive]); // eslint-disable-line
+  // WebRTC handles the full conversation loop — no manual record/submit effects needed
 
   // Parse "Interviewer: / SME:" transcript into turns
   function parseTranscriptTurns(text) {
@@ -50,21 +31,21 @@ export default function Panel1Indtal({
     const blocks = text.split(/\n{2,}/);
     const turns = blocks.map(block => {
       const b = block.trim();
-      if (/^Interviewer:/i.test(b)) return { type: 'ailean', text: b.replace(/^Interviewer:\s*/i, '') };
+      if (/^Aison:/i.test(b)) return { type: 'aison', text: b.replace(/^Aison:\s*/i, '') };
       if (/^SME:/i.test(b)) return { type: 'user', text: b.replace(/^SME:\s*/i, '') };
       return null;
     }).filter(Boolean);
     return turns.length >= 2 ? turns : null;
   }
 
-  const displayTurns = aileanTurns.length > 0 ? aileanTurns : parseTranscriptTurns(input);
+  const displayTurns = aisonTurns.length > 0 ? aisonTurns : parseTranscriptTurns(input);
   const isStructured = !!displayTurns;
 
   // Scroll conversation to bottom
   useEffect(() => {
-    const el = document.getElementById('craft-ailean-scroll');
+    const el = document.getElementById('craft-aison-scroll');
     if (el) el.scrollTop = el.scrollHeight;
-  }, [displayTurns?.length, currentDraft, aileanBusy]);
+  }, [displayTurns?.length, currentDraft, aisonBusy]);
 
   async function handlePaste() {
     const text = await pasteFromClipboard();
@@ -75,9 +56,9 @@ export default function Panel1Indtal({
     }
   }
 
-  function handleAileanToggle() {
-    if (aileanActive && isRecording) onRecord?.(); // stop recording first
-    ailean?.toggle();
+  function handleAisonToggle() {
+    if (aisonActive && isRecording) onRecord?.(); // stop recording first
+    aison?.toggle();
   }
 
   return (
@@ -85,12 +66,12 @@ export default function Panel1Indtal({
       {/* Toolbar */}
       <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-center gap-2 shrink-0">
 
-        {/* Paste — only when Ailean is off */}
-        {!aileanActive && (
+        {/* Paste — only when Aison is off */}
+        {!aisonActive && (
           <button
             onClick={handlePaste}
             className={[
-              'w-[30%] flex items-center justify-center gap-1 text-xs font-medium px-2 py-1.5 rounded-md border transition-all',
+              'flex-1 flex items-center justify-center gap-1 text-xs font-medium px-2 py-1.5 rounded-md border transition-all',
               pasteFlash
                 ? 'bg-green-50 text-green-700 border-green-300'
                 : 'text-gray-600 border-gray-200 hover:border-gray-400 hover:text-gray-800',
@@ -104,12 +85,12 @@ export default function Panel1Indtal({
           </button>
         )}
 
-        {/* Record / Stop — only when Ailean is off */}
-        {!aileanActive && recorderSupported && (
+        {/* Record / Stop — only when Aison is off */}
+        {!aisonActive && recorderSupported && (
           <button
             onClick={onRecord}
             className={[
-              'w-[30%] flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 rounded-md border transition-all',
+              'flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 rounded-md border transition-all',
               isRecording
                 ? 'bg-red-500 text-white border-red-500 hover:bg-red-600 animate-pulse'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-red-300 hover:text-red-500 hover:bg-red-50',
@@ -120,21 +101,21 @@ export default function Panel1Indtal({
           </button>
         )}
 
-        {/* Ailean end button — when active */}
-        {aileanActive && (
+        {/* Aison end button — when active */}
+        {aisonActive && (
           <button
-            onClick={handleAileanToggle}
-            className="w-[30%] flex items-center justify-center gap-1.5 text-xs font-medium px-2 py-1.5 rounded-md border bg-purple-600 text-white border-purple-600 hover:bg-purple-700 transition-all"
+            onClick={handleAisonToggle}
+            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium px-2 py-1.5 rounded-md border bg-purple-600 text-white border-purple-600 hover:bg-purple-700 transition-all"
           >
             Afslut
           </button>
         )}
 
-        {/* Ailean toggle — when not active */}
-        {ailean && !aileanActive && (
+        {/* Aison toggle — when not active */}
+        {aison && !aisonActive && (
           <button
-            onClick={handleAileanToggle}
-            className="w-[30%] flex items-center justify-center gap-1.5 text-xs font-medium px-2 py-1.5 rounded-md border text-gray-600 border-gray-200 hover:border-purple-400 hover:text-purple-600 transition-all"
+            onClick={handleAisonToggle}
+            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium px-2 py-1.5 rounded-md border text-gray-600 border-gray-200 hover:border-purple-400 hover:text-purple-600 transition-all"
           >
             <svg width="13" height="11" viewBox="0 0 13 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="0"   y="4"   width="2" height="3"  rx="1" fill="currentColor" opacity="0.6"/>
@@ -143,10 +124,51 @@ export default function Panel1Indtal({
               <rect x="7.5" y="2"   width="2" height="7"  rx="1" fill="currentColor" opacity="0.8"/>
               <rect x="10"  y="4"   width="2" height="3"  rx="1" fill="currentColor" opacity="0.6"/>
             </svg>
-            Ailean
+            Aison
           </button>
         )}
+
+        {/* Ryd — always visible, dimmed when empty */}
+        <button
+          onClick={() => { if (input || aisonActive) { setConfirmRyd(true); } }}
+          disabled={!input && !aisonActive}
+          className="flex-1 flex items-center justify-center gap-1 text-xs font-medium px-2 py-1.5 rounded-md border transition-all disabled:opacity-30 disabled:cursor-not-allowed text-gray-400 border-gray-200 hover:border-red-300 hover:text-red-400 hover:bg-red-50"
+        >
+          Ryd
+        </button>
       </div>
+
+      {/* Ryd confirmation bar */}
+      {confirmRyd && (
+        <div className="shrink-0 px-3 py-2 bg-amber-50 border-b border-amber-200 flex flex-col gap-2">
+          <p className="text-xs text-amber-800 font-medium">Gem dit input og fortsæt på en anden måde?</p>
+          <div className="flex gap-2">
+            <button
+              onClick={async () => {
+                try { await navigator.clipboard.writeText(input); } catch {}
+                setInput('');
+                if (aisonActive) { aison?.reset(); handleAisonToggle(); }
+                setConfirmRyd(false);
+              }}
+              className="flex-1 text-xs font-medium py-1 rounded-md bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-colors"
+            >
+              Kopier & ryd
+            </button>
+            <button
+              onClick={() => { setInput(''); if (aisonActive) { aison?.reset(); handleAisonToggle(); } setConfirmRyd(false); }}
+              className="flex-1 text-xs font-medium py-1 rounded-md bg-white text-red-500 border border-red-200 hover:bg-red-50 transition-colors"
+            >
+              Bare ryd
+            </button>
+            <button
+              onClick={() => setConfirmRyd(false)}
+              className="flex-1 text-xs font-medium py-1 rounded-md bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              Annuller
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main area */}
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
@@ -154,22 +176,22 @@ export default function Panel1Indtal({
 
           {/* Structured conversation view */}
           {isStructured ? (
-            <div className="absolute inset-0 overflow-y-auto p-3 space-y-3 bg-white" id="craft-ailean-scroll">
+            <div className="absolute inset-0 overflow-y-auto p-3 space-y-3 bg-white" id="craft-aison-scroll">
               {displayTurns.map((turn, i) => (
                 <div key={i} className={`flex gap-2 ${turn.type === 'user' ? 'flex-row-reverse' : ''}`}>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-white text-[9px] font-bold ${turn.type === 'ailean' ? 'bg-purple-600' : 'bg-gray-400'}`}>
-                    {turn.type === 'ailean' ? 'A' : 'D'}
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-white text-[9px] font-bold ${turn.type === 'aison' ? 'bg-purple-600' : 'bg-gray-400'}`}>
+                    {turn.type === 'aison' ? 'A' : 'D'}
                   </div>
-                  <div className={`flex-1 min-w-0 text-xs rounded-xl px-3 py-2 leading-relaxed ${turn.type === 'ailean' ? 'bg-purple-50 text-purple-900' : 'bg-gray-100 text-gray-700'}`}>
+                  <div className={`flex-1 min-w-0 text-xs rounded-xl px-3 py-2 leading-relaxed ${turn.type === 'aison' ? 'bg-purple-50 text-purple-900' : 'bg-gray-100 text-gray-700'}`}>
                     <span className="block text-[9px] font-semibold uppercase tracking-wider opacity-50 mb-0.5">
-                      {turn.type === 'ailean' ? 'Ailean' : 'Dig'}
+                      {turn.type === 'aison' ? 'Aison' : 'Dig'}
                     </span>
                     {turn.text}
                   </div>
                 </div>
               ))}
 
-              {aileanActive && (currentDraft.trim() || (isRecording && interimText)) && (
+              {aisonActive && (currentDraft.trim() || (isRecording && interimText)) && (
                 <div className="flex gap-2 flex-row-reverse">
                   <div className="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center shrink-0 text-white text-[9px] font-bold">D</div>
                   <div className="flex-1 min-w-0 text-xs rounded-xl px-3 py-2 leading-relaxed bg-gray-100 text-gray-700 opacity-60 italic">
@@ -180,28 +202,17 @@ export default function Panel1Indtal({
                 </div>
               )}
 
-              {aileanActive && isRecording && (
-                <div className="flex justify-center pt-1">
-                  <button
-                    onClick={onRecord}
-                    className="flex items-center gap-1.5 text-xs font-semibold px-5 py-1.5 rounded-full border bg-red-500 text-white border-red-500 hover:bg-red-600 animate-pulse shadow-sm"
-                  >
-                    <span className="w-2 h-2 rounded-sm bg-white shrink-0" />
-                    Send →
-                  </button>
-                </div>
-              )}
-
-              {aileanActive && aileanBusy && (
+              {/* WebRTC live status */}
+              {aisonActive && (
                 <div className="flex gap-2">
                   <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center shrink-0 text-white text-[9px] font-bold">A</div>
                   <div className="flex-1 min-w-0 text-xs rounded-xl px-3 py-2 bg-purple-50 text-purple-600">
-                    {ailean.thinking ? (
+                    {aison.thinking ? (
                       <span className="flex items-center gap-1.5">
                         <span className="inline-block w-3 h-3 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin shrink-0" />
-                        tænker…
+                        forbinder…
                       </span>
-                    ) : (
+                    ) : aison.speaking ? (
                       <span className="flex items-center gap-1.5">
                         <span className="flex items-end gap-0.5 h-3 shrink-0">
                           {[0,1,2,3].map(i => (
@@ -210,6 +221,11 @@ export default function Panel1Indtal({
                           ))}
                         </span>
                         taler…
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shrink-0" />
+                        lytter…
                       </span>
                     )}
                   </div>
@@ -238,16 +254,16 @@ export default function Panel1Indtal({
           )}
         </div>
 
-        {/* Ailean status bar */}
-        {aileanActive && !isStructured && (
+        {/* Aison status bar */}
+        {aisonActive && !isStructured && (
           <div className="shrink-0 border-t border-purple-100 bg-purple-50/60 px-3 py-2">
-            {ailean.thinking && (
+            {aison.thinking && (
               <div className="flex items-center gap-2 text-xs text-purple-600">
                 <span className="w-3.5 h-3.5 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin shrink-0" />
-                Ailean tænker…
+                Forbinder…
               </div>
             )}
-            {ailean.speaking && !ailean.thinking && (
+            {aison.speaking && !aison.thinking && (
               <div className="flex items-center gap-2 text-xs text-purple-600">
                 <span className="flex items-end gap-0.5 h-3.5 shrink-0">
                   {[0,1,2,3].map(i => (
@@ -255,12 +271,17 @@ export default function Panel1Indtal({
                       style={{ height: `${[8,12,10,7][i]}px`, animationDelay: `${i * 0.12}s` }} />
                   ))}
                 </span>
-                Ailean taler…
-                <button onClick={ailean.stopSpeaking} className="ml-auto text-[10px] text-purple-400 hover:text-purple-700 underline">stop</button>
+                Aison taler…
               </div>
             )}
-            {!ailean.thinking && !ailean.speaking && (
-              <p className="text-[10px] text-purple-400 italic">Optag dit svar — Ailean stiller et opfølgningsspørgsmål.</p>
+            {!aison.thinking && !aison.speaking && (
+              <div className="flex items-center gap-2 text-xs text-purple-600">
+                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shrink-0" />
+                Aison lytter — tal nu
+              </div>
+            )}
+            {aison.error && (
+              <p className="text-[10px] text-red-500 bg-red-50 border border-red-100 rounded px-2 py-1 mt-1">{aison.error}</p>
             )}
           </div>
         )}

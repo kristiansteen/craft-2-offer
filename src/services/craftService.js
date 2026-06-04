@@ -32,9 +32,9 @@ function parseJson(text) {
 }
 
 // ── getCraftFollowUp ──────────────────────────────────────────────────────────
-// Ailean interviewer follow-up for construction job scoping
+// Aison interviewer follow-up for construction job scoping
 export async function getCraftFollowUp(transcript, history, proxyAuth) {
-  const system = `Du er Ailean, en erfaren byggesagkyndig der hjælper håndværkere med at afdække jobdetaljer.
+  const system = `Du er Aison, en erfaren byggesagkyndig der hjælper håndværkere med at afdække jobdetaljer.
 Stil ét kort, præcist opfølgningsspørgsmål på dansk for at afklare omfang, mål eller materialer.
 Returner KUN spørgsmålet — ingen introduktion, ingen forklaring.`;
 
@@ -68,14 +68,14 @@ JSON-skema:
     { "id": "mat1", "name": "materialenavn", "quantity": "antal + enhed", "trade": "faggruppe-id" }
   ],
   "risks": [
-    { "id": "r1", "description": "risikobeskrivelse", "mitigation": "afhjælpning" }
+    { "id": "r1", "title": "kort risikonavn", "description": "uddybning", "probability": 70, "consequence": 60, "mitigation": "afhjælpning" }
   ]
 }
 
 Regler:
 - Identificér alle faggrupper der er nødvendige (murer, elektriker, VVS, tømrer, maler osv.)
 - Estimer materialer baseret på mål og scope
-- Risici: inkludér kun reelle byggerisici
+- Risici: inkludér kun reelle byggerisici; probability og consequence er 0–100
 - Svar på dansk`;
 
   const text = await callClaude({
@@ -176,7 +176,7 @@ JSON-skema:
     }
   ],
   "risks": [
-    { "id": "risk1", "description": "risiko", "impact": "high|medium|low", "mitigation": "afhjælpning" }
+    { "id": "risk1", "title": "risikonavn", "description": "uddybning", "probability": 70, "consequence": 60, "mitigation": "afhjælpning" }
   ],
   "invitees": []
 }

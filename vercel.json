@@ -1,6 +1,20 @@
 {
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "aison.dk" }],
+      "destination": "/landing.html",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.aison.dk" }],
+      "destination": "/landing.html",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!landing\\.html|assets/).*)", "destination": "/index.html" }
   ]
 }

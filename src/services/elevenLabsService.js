@@ -1,4 +1,4 @@
-const DEFAULT_VOICE_ID = 'EXAVITQu4vr4xnSDxMaL'; // Sarah
+const DEFAULT_VOICE_ID = 'EU14UTtflRFtOAuWCuVe'; // Aison
 
 // Calls the server-side /api/tts proxy (ElevenLabs key stays server-side).
 export async function speakText(text, token, voiceId = DEFAULT_VOICE_ID) {

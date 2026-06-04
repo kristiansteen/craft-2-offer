@@ -137,44 +137,104 @@ export default function Panel2Efterse({ jobBreakdown, setJobBreakdown, loading, 
         )}
 
         {/* Materials */}
-        {(jobBreakdown.materials || []).length > 0 && (
-          <Section title="Materialer">
-            <div className="flex flex-col gap-1.5">
-              {jobBreakdown.materials.map(m => (
-                <div key={m.id} className="flex items-center gap-2 group">
-                  <input
-                    value={m.name}
-                    onChange={e => updateMaterial(m.id, 'name', e.target.value)}
-                    className="flex-1 text-xs text-gray-600 outline-none border-b border-transparent focus:border-craft px-1 py-0.5"
-                  />
-                  <input
-                    value={m.quantity}
-                    onChange={e => updateMaterial(m.id, 'quantity', e.target.value)}
-                    className="w-16 text-xs text-gray-500 outline-none border-b border-transparent focus:border-craft px-1 py-0.5 text-right"
-                  />
-                  <button
-                    onClick={() => removeMaterial(m.id)}
-                    className="opacity-0 group-hover:opacity-100 text-red-300 hover:text-red-500 text-xs transition-opacity"
-                  >✕</button>
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
+        <Section title="Materialer">
+          <div className="flex flex-col gap-1.5">
+            {(jobBreakdown.materials || []).map(m => (
+              <div key={m.id} className="flex items-center gap-2 group">
+                <input
+                  value={m.name}
+                  onChange={e => updateMaterial(m.id, 'name', e.target.value)}
+                  className="flex-1 text-xs text-gray-600 outline-none border-b border-transparent focus:border-craft px-1 py-0.5"
+                  placeholder="Materiale"
+                />
+                <input
+                  value={m.quantity}
+                  onChange={e => updateMaterial(m.id, 'quantity', e.target.value)}
+                  className="w-16 text-xs text-gray-500 outline-none border-b border-transparent focus:border-craft px-1 py-0.5 text-right"
+                  placeholder="Antal"
+                />
+                <button
+                  onClick={() => removeMaterial(m.id)}
+                  className="opacity-0 group-hover:opacity-100 text-red-300 hover:text-red-500 text-xs transition-opacity"
+                >✕</button>
+              </div>
+            ))}
+            <button
+              onClick={() => setJobBreakdown(prev => ({
+                ...prev,
+                materials: [...(prev.materials || []), { id: `m${Date.now()}`, name: '', quantity: '' }],
+              }))}
+              className="text-xs text-craft hover:text-craft-dark border border-dashed border-craft/30 hover:border-craft rounded-lg px-2 py-1 transition-colors"
+            >
+              + Tilføj materiale
+            </button>
+          </div>
+        </Section>
 
         {/* Risks */}
-        {(jobBreakdown.risks || []).length > 0 && (
-          <Section title="Risici">
-            <div className="flex flex-col gap-1.5">
-              {jobBreakdown.risks.map(r => (
-                <div key={r.id} className="text-xs">
-                  <span className="text-amber-600 font-medium">{r.description}</span>
-                  {r.mitigation && <span className="text-gray-400"> — {r.mitigation}</span>}
+        <Section title="Risici">
+          <div className="flex flex-col gap-3">
+            {(jobBreakdown.risks || []).map(r => (
+              <div key={r.id} className="border border-gray-100 rounded-lg px-3 py-2 group">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <input
+                    value={r.title || r.description || ''}
+                    onChange={e => setJobBreakdown(prev => ({
+                      ...prev,
+                      risks: prev.risks.map(x => x.id === r.id ? { ...x, title: e.target.value } : x),
+                    }))}
+                    placeholder="Risikonavn"
+                    className="flex-1 text-xs font-medium text-amber-700 outline-none border-b border-transparent focus:border-craft px-0.5 py-0.5 bg-transparent"
+                  />
+                  <button
+                    onClick={() => setJobBreakdown(prev => ({ ...prev, risks: prev.risks.filter(x => x.id !== r.id) }))}
+                    className="opacity-0 group-hover:opacity-100 text-red-300 hover:text-red-500 text-xs transition-opacity shrink-0"
+                  >✕</button>
                 </div>
-              ))}
-            </div>
-          </Section>
-        )}
+                <div className="flex flex-col gap-1 mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 w-20 shrink-0">Sandsynlighed {r.probability ?? 50}%</span>
+                    <input type="range" min={0} max={100} value={r.probability ?? 50}
+                      onChange={e => setJobBreakdown(prev => ({
+                        ...prev,
+                        risks: prev.risks.map(x => x.id === r.id ? { ...x, probability: Number(e.target.value) } : x),
+                      }))}
+                      className="flex-1 accent-craft h-1.5"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400 w-20 shrink-0">Konsekvens {r.consequence ?? 50}%</span>
+                    <input type="range" min={0} max={100} value={r.consequence ?? 50}
+                      onChange={e => setJobBreakdown(prev => ({
+                        ...prev,
+                        risks: prev.risks.map(x => x.id === r.id ? { ...x, consequence: Number(e.target.value) } : x),
+                      }))}
+                      className="flex-1 accent-craft h-1.5"
+                    />
+                  </div>
+                </div>
+                <input
+                  value={r.mitigation || ''}
+                  onChange={e => setJobBreakdown(prev => ({
+                    ...prev,
+                    risks: prev.risks.map(x => x.id === r.id ? { ...x, mitigation: e.target.value } : x),
+                  }))}
+                  placeholder="Afhjælpning…"
+                  className="w-full text-[11px] text-gray-400 outline-none border-b border-transparent focus:border-craft px-0.5 py-0.5 bg-transparent"
+                />
+              </div>
+            ))}
+            <button
+              onClick={() => setJobBreakdown(prev => ({
+                ...prev,
+                risks: [...(prev.risks || []), { id: `r${Date.now()}`, title: '', probability: 50, consequence: 50, mitigation: '' }],
+              }))}
+              className="text-xs text-craft hover:text-craft-dark border border-dashed border-craft/30 hover:border-craft rounded-lg px-2 py-1 transition-colors"
+            >
+              + Tilføj risiko
+            </button>
+          </div>
+        </Section>
       </div>
 
       {/* CTA */}

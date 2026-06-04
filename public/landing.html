@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aison — Dit AI-tilbudsværktøj for håndværkere</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23E67E22'/><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='18' font-family='sans-serif' font-weight='700' fill='white'>A</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Birthstone&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --craft:       #E67E22;
+      --craft-dark:  #C96A12;
+      --craft-light: #F5A553;
+      --craft-pale:  #FEF3E8;
+      --dark:        #0f0e0c;
+      --dark-surface:#1a1714;
+      --text:        #1a1714;
+      --muted:       #6b7280;
+      --border:      #e5e7eb;
+      --white:       #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--white);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 1rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Utility ─────────────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    .tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: var(--craft-pale);
+      color: var(--craft-dark);
+    }
+
+    /* ── Nav ─────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .nav-logo {
+      font-family: 'Birthstone', cursive;
+      font-size: 2rem;
+      font-weight: 400;
+      background: linear-gradient(135deg, #E67E22 0%, #F5A553 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+      line-height: 1;
+    }
+
+    .nav-cta {
+      background: var(--craft);
+      color: var(--white);
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 0.6rem 1.4rem;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .nav-cta:hover { background: var(--craft-dark); transform: translateY(-1px); }
+
+    /* ── Hero ────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      background: var(--dark);
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 7rem 0 5rem;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 65% 50%, rgba(230,126,34,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 20%, rgba(230,126,34,0.10) 0%, transparent 60%),
+        var(--dark);
+    }
+
+    /* Animated tool silhouette */
+    .hero-icon {
+      position: absolute;
+      right: 6%;
+      top: 50%;
+      transform: translateY(-50%);
+      width: clamp(260px, 30vw, 440px);
+      opacity: 0.07;
+      animation: heroFloat 8s ease-in-out infinite;
+    }
+
+    @keyframes heroFloat {
+      0%, 100% { transform: translateY(-50%) rotate(-5deg); }
+      50%       { transform: translateY(calc(-50% - 16px)) rotate(5deg); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 680px;
+    }
+
+    .hero-tag { margin-bottom: 1.5rem; }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5.5vw, 4.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 span { color: var(--craft); }
+
+    .hero-desc {
+      font-size: clamp(1rem, 1.8vw, 1.2rem);
+      color: rgba(255,255,255,0.65);
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--craft);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(230,126,34,0.35);
+    }
+    .btn-primary:hover {
+      background: var(--craft-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(230,126,34,0.45);
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-decoration: none;
+      gap: 0.35rem;
+      transition: color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--white); }
+
+    .hero-stats {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 4rem;
+      padding-top: 2.5rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      flex-wrap: wrap;
+    }
+
+    .hero-stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--craft);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .hero-stat-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Problem ─────────────────────────────────────────── */
+    .section { padding: 6rem 0; }
+    .section-sm { padding: 4rem 0; }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--craft);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+    }
+
+    .section-body {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.7;
+    }
+
+    .problem-section { background: var(--dark-surface); }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .problem-content .section-title { color: var(--white); }
+    .problem-content .section-body  { color: rgba(255,255,255,0.55); }
+    .problem-content .section-label { color: var(--craft-light); }
+
+    .stat-cards { display: flex; flex-direction: column; gap: 1rem; }
+
+    .stat-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 1.4rem 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: rgba(230,126,34,0.3); }
+
+    .stat-card-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--craft);
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      min-width: 5rem;
+    }
+
+    .stat-card-text strong {
+      display: block;
+      font-size: 0.95rem;
+      color: var(--white);
+      margin-bottom: 0.2rem;
+    }
+    .stat-card-text span { font-size: 0.82rem; color: rgba(255,255,255,0.45); }
+
+    /* ── How it works ────────────────────────────────────── */
+    .steps-header { text-align: center; margin-bottom: 4rem; }
+    .steps-header .section-label { text-align: center; }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      position: relative;
+    }
+
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 2.2rem;
+      left: calc(10% + 1rem);
+      right: calc(10% + 1rem);
+      height: 2px;
+      background: linear-gradient(90deg, var(--craft) 0%, rgba(230,126,34,0.2) 100%);
+      z-index: 0;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0 0.75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-number {
+      width: 4rem;
+      height: 4rem;
+      border-radius: 50%;
+      background: var(--craft-pale);
+      border: 2px solid var(--craft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--craft);
+      margin-bottom: 1.2rem;
+      flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .step:hover .step-number {
+      background: var(--craft);
+      color: var(--white);
+    }
+
+    .step-emoji {
+      font-size: 1.4rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    .step-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Features ────────────────────────────────────────── */
+    .features-bg { background: var(--craft-pale); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .feature-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+    }
+    .feature-card:hover {
+      box-shadow: 0 12px 40px rgba(230,126,34,0.12);
+      transform: translateY(-3px);
+      border-color: var(--craft-light);
+    }
+
+    .feature-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 12px;
+      background: var(--craft-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .feature-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Comparison ──────────────────────────────────────── */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 3.5rem;
+    }
+
+    .compare-card {
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+      border: 2px solid var(--border);
+    }
+
+    .compare-card.bad  { background: #fafafa; }
+    .compare-card.good { background: var(--dark); border-color: var(--craft); }
+
+    .compare-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+    }
+    .compare-card.bad  .compare-badge { background: #fee2e2; color: #b91c1c; }
+    .compare-card.good .compare-badge { background: rgba(230,126,34,0.2); color: var(--craft-light); }
+
+    .compare-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    .compare-card.good .compare-title { color: var(--white); }
+
+    .compare-list { list-style: none; display: flex; flex-direction: column; gap: 0.9rem; }
+
+    .compare-list li {
+      font-size: 0.9rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      line-height: 1.4;
+    }
+    .compare-card.bad  .compare-list li { color: var(--muted); }
+    .compare-card.good .compare-list li { color: rgba(255,255,255,0.75); }
+
+    .compare-list li .icon {
+      flex-shrink: 0;
+      width: 1.3rem;
+      height: 1.3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-top: 0.05rem;
+    }
+    .compare-card.bad  .icon { background: #fee2e2; color: #b91c1c; }
+    .compare-card.good .icon { background: rgba(230,126,34,0.25); color: var(--craft-light); }
+
+    /* ── Pricing ────────────────────────────────────────────── */
+    .pricing-section { background: var(--dark-surface); }
+
+    .pricing-header { text-align: center; margin-bottom: 3.5rem; }
+    .pricing-header .section-label { color: var(--craft-light); }
+    .pricing-header .section-title { color: var(--white); }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .pricing-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .pricing-card:hover { border-color: rgba(230,126,34,0.4); }
+
+    .pricing-card--featured {
+      background: rgba(230,126,34,0.08);
+      border-color: var(--craft);
+      border-width: 2px;
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: var(--craft);
+      color: var(--white);
+      margin-bottom: 1.25rem;
+    }
+
+    .pricing-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-price {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--craft);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .pricing-price span {
+      font-size: 1rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0;
+    }
+
+    .pricing-price-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 1.75rem;
+    }
+
+    .pricing-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features li {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.65);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      line-height: 1.4;
+    }
+
+    .pricing-features li .check {
+      flex-shrink: 0;
+      width: 1.1rem;
+      height: 1.1rem;
+      border-radius: 50%;
+      background: rgba(230,126,34,0.2);
+      color: var(--craft-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+      margin-top: 0.1rem;
+    }
+
+    .pricing-cta {
+      display: block;
+      text-align: center;
+      padding: 0.8rem 1.5rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .pricing-cta--primary {
+      background: var(--craft);
+      color: var(--white);
+    }
+    .pricing-cta--primary:hover { background: var(--craft-dark); transform: translateY(-1px); }
+
+    .pricing-cta--outline {
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.65);
+    }
+    .pricing-cta--outline:hover { border-color: var(--craft); color: var(--craft-light); }
+
+    /* ── Responsive ── pricing override must come before main block ── */
+    @media (max-width: 900px) {
+      .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+    }
+    @media (max-width: 600px) {
+      .pricing-grid { max-width: 100%; }
+    }
+
+    /* ── CTA section ─────────────────────────────────────── */
+    .cta-section {
+      background: var(--dark);
+      text-align: center;
+      padding: 7rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(230,126,34,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-section .tag { margin-bottom: 1.5rem; background: rgba(230,126,34,0.15); color: var(--craft-light); }
+
+    .cta-section h2 {
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+
+    .cta-section p {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 2.5rem;
+      max-width: 440px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-actions { display: flex; justify-content: center; gap: 1.2rem; flex-wrap: wrap; }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    footer {
+      background: var(--dark-surface);
+      padding: 2.5rem 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-logo {
+      font-family: 'Birthstone', cursive;
+      font-size: 1.8rem;
+      font-weight: 400;
+      background: linear-gradient(135deg, #E67E22 0%, #F5A553 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .footer-copy { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+
+    .footer-link {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--craft-light); }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .problem-grid  { grid-template-columns: 1fr; gap: 3rem; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .compare-grid  { grid-template-columns: 1fr; }
+      /* 5-step row: 2 columns on tablet */
+      .steps-grid    { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .steps-grid::before { display: none; }
+      .section { padding: 4.5rem 0; }
+      .section-sm { padding: 3rem 0; }
+    }
+
+    @media (max-width: 600px) {
+      /* Nav */
+      nav { padding: 1rem 1.25rem; }
+
+      /* Layout */
+      .container { padding: 0 1.25rem; }
+      .section, .cta-section { padding: 3.5rem 0; }
+      .section-sm { padding: 2.5rem 0; }
+
+      /* Hero */
+      .hero { padding: 5.5rem 0 3.5rem; min-height: auto; }
+      .hero-icon { display: none; }
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .hero-actions .btn-primary,
+      .hero-actions .btn-ghost { width: 100%; justify-content: center; text-align: center; }
+      .hero-stats { gap: 1.25rem; margin-top: 2.5rem; padding-top: 1.75rem; }
+      .hero-stat-value { font-size: 1.6rem; }
+
+      /* Steps — single column */
+      .steps-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .step { padding: 0 0.5rem; }
+      .step-number { width: 3rem; height: 3rem; font-size: 0.9rem; margin-bottom: 0.75rem; }
+      .step-emoji { font-size: 1.1rem; }
+      .step-title { font-size: 0.9rem; }
+      .step-desc { font-size: 0.8rem; }
+
+      /* Feature cards */
+      .features-grid { grid-template-columns: 1fr; }
+      .feature-card { padding: 1.5rem 1.25rem; }
+
+      /* Comparison cards */
+      .compare-card { padding: 1.75rem 1.5rem; }
+
+      /* CTA */
+      .cta-actions { flex-direction: column; align-items: stretch; }
+      .cta-actions a { width: 100%; text-align: center; justify-content: center; }
+
+      /* Footer */
+      .footer-inner { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    }
+
+    @media (max-width: 400px) {
+      .hero h1 { font-size: 2rem; }
+      .section-title { font-size: 1.45rem; }
+      .stat-card-value { font-size: 1.6rem; min-width: 4rem; }
+      .pricing-price { font-size: 2rem; }
+      .compare-card { padding: 1.5rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <a href="#" class="nav-logo">Aison</a>
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <a href="#priser" style="font-size:0.875rem;font-weight:500;color:var(--muted);text-decoration:none;">Priser</a>
+      <a href="https://craft-2-offer.vercel.app/" class="nav-cta">Prøv gratis →</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+
+    <!-- Decorative tool SVG -->
+    <svg class="hero-icon" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="85" y="10" width="30" height="100" rx="6" fill="white"/>
+      <rect x="70" y="100" width="60" height="16" rx="4" fill="white"/>
+      <rect x="78" y="116" width="44" height="74" rx="8" fill="white"/>
+      <circle cx="100" cy="153" r="10" fill="white" opacity="0.4"/>
+      <rect x="20" y="60" width="160" height="8" rx="4" fill="white" opacity="0.3" transform="rotate(45 20 60)"/>
+    </svg>
+
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-tag">
+          <span class="tag">AI-tilbudsværktøj for håndværkere</span>
+        </div>
+        <h1>Fra mål til tilbud —<br /><span>på 5 minutter</span></h1>
+        <p class="hero-desc">
+          Aison er din AI-assistent, der hjælper dig med at lave
+          professionelle tilbud, koordinere underentreprenører og
+          generere en klar projektplan — direkte fra din stemme.
+        </p>
+        <div class="hero-actions">
+          <a href="https://craft-2-offer.vercel.app/" class="btn-primary">
+            Lav dit første tilbud gratis →
+          </a>
+          <a href="#hvordan" class="btn-ghost">Se hvordan det virker ↓</a>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-value">5 min</div>
+            <div class="hero-stat-label">fra beskrivelse til færdigt tilbud</div>
+          </div>
+          <div>
+            <div class="hero-stat-value">0 kr.</div>
+            <div class="hero-stat-label">at komme i gang</div>
+          </div>
+          <div>
+            <div class="hero-stat-value">100%</div>
+            <div class="hero-stat-label">dansk sprog og fagtermer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section class="problem-section section">
+    <div class="container">
+      <div class="problem-grid">
+        <div class="problem-content">
+          <p class="section-label">Problemet</p>
+          <h2 class="section-title">Tilbudsarbejde stjæler tid fra det rigtige arbejde</h2>
+          <p class="section-body">
+            Du er håndværker — ikke revisor. Men hvert tilbud tager timer: mål, materialer, faggrupper, risici og pris.
+            Aison gør det på minutter, så du kan bruge din tid på det du er bedst til.
+          </p>
+        </div>
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="stat-card-value">2–4 t</div>
+            <div class="stat-card-text">
+              <strong>Gennemsnitlig tid på ét tilbud</strong>
+              <span>Mål, beregning, formatering, afsendelse</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-value">~30%</div>
+            <div class="stat-card-text">
+              <strong>Af tilbud vinder du ikke</strong>
+              <span>Penge og tid der ikke kommer retur</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-value">&lt; 5 min</div>
+            <div class="stat-card-text">
+              <strong>Med Aison</strong>
+              <span>Beskriv jobbet — Aison laver resten</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="hvordan">
+    <div class="container">
+      <div class="steps-header">
+        <p class="section-label">Sådan virker det</p>
+        <h2 class="section-title">5 trin — fra beskrivelse til projektplan</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-number">1</div>
+          <span class="step-emoji">🎙️</span>
+          <div class="step-title">Indtal</div>
+          <p class="step-desc">Beskriv jobbet med stemmen eller skriv det ind. Aison stiller opfølgende spørgsmål.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <span class="step-emoji">🔍</span>
+          <div class="step-title">Efterse</div>
+          <p class="step-desc">Gennemgå faggrupper, materialer og risici. Juster inden tilbuddet laves.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <span class="step-emoji">📋</span>
+          <div class="step-title">Tilbud</div>
+          <p class="step-desc">Et komplet tilbud med timer, materialer og pris — klar til at sende.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <span class="step-emoji">🤝</span>
+          <div class="step-title">Koordiner</div>
+          <p class="step-desc">Tilføj underentreprenører og invitér dem direkte til projektet.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">5</div>
+          <span class="step-emoji">📅</span>
+          <div class="step-title">Projektplan</div>
+          <p class="step-desc">Automatisk Gantt-plan med faser og opgaver. Eksportér til vimpl-board.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section features-bg">
+    <div class="container">
+      <p class="section-label">Hvad du får</p>
+      <h2 class="section-title">Alt hvad du behøver — intet du ikke gør</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🎙️</div>
+          <div class="feature-title">Stem-til-tilbud</div>
+          <p class="feature-desc">Beskriv opgaven med stemmen. Aison forstår håndværkerfaglig dansk og strukturerer automatisk.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🧱</div>
+          <div class="feature-title">Faggrupper & materialer</div>
+          <p class="feature-desc">Automatisk identifikation af hvilke faggrupper og materialer der er nødvendige — baseret på opgaven.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <div class="feature-title">Prisberegning</div>
+          <p class="feature-desc">Tilbud med timer, materialer og totalpris i DKK. Redigerbart, så du altid har kontrol.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚠️</div>
+          <div class="feature-title">Risikovurdering</div>
+          <p class="feature-desc">Aison identificerer byggeririsici og scorer dem på sandsynlighed og konsekvens — inden du sender tilbuddet.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤝</div>
+          <div class="feature-title">Underentreprenører</div>
+          <p class="feature-desc">Tilføj UE'er og koordiner hvem der laver hvad. Invitér dem til projektet med ét klik.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📅</div>
+          <div class="feature-title">Projektplan i vimpl</div>
+          <p class="feature-desc">Eksportér direkte til et visuelt projekt-board med Gantt-plan, risikomatrix og opgaver.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section class="section">
+    <div class="container">
+      <p class="section-label">Sammenligning</p>
+      <h2 class="section-title">Den gamle måde vs. med Aison</h2>
+      <div class="compare-grid">
+        <div class="compare-card bad">
+          <span class="compare-badge">Uden Aison</span>
+          <h3 class="compare-title">Manuel tilbudsgivning</h3>
+          <ul class="compare-list">
+            <li>
+              <span class="icon">✕</span>
+              2–4 timer per tilbud
+            </li>
+            <li>
+              <span class="icon">✕</span>
+              Risiko for at glemme faggrupper eller materialer
+            </li>
+            <li>
+              <span class="icon">✕</span>
+              Ingen systematisk risikovurdering
+            </li>
+            <li>
+              <span class="icon">✕</span>
+              UE-koordinering pr. telefon og SMS
+            </li>
+            <li>
+              <span class="icon">✕</span>
+              Projektplan laves i hånden — eller slet ikke
+            </li>
+            <li>
+              <span class="icon">✕</span>
+              Viden og erfaring sidder i hovedet
+            </li>
+          </ul>
+        </div>
+        <div class="compare-card good">
+          <span class="compare-badge">Med Aison</span>
+          <h3 class="compare-title">Smart tilbudsgivning</h3>
+          <ul class="compare-list">
+            <li>
+              <span class="icon">✓</span>
+              Tilbud klar på under 5 minutter
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              Komplet liste over faggrupper og materialer
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              Automatisk risikovurdering med scores
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              UE'er inviteres direkte til projektet
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              Automatisk Gantt-plan og projektboard
+            </li>
+            <li>
+              <span class="icon">✓</span>
+              Al viden gemt og genanvendelig
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="pricing-section section" id="priser">
+    <div class="container">
+      <div class="pricing-header">
+        <p class="section-label">Priser</p>
+        <h2 class="section-title">Simpel og gennemsigtig prissætning</h2>
+      </div>
+      <div class="pricing-grid">
+
+        <!-- Starter -->
+        <div class="pricing-card">
+          <div class="pricing-name">Starter</div>
+          <div class="pricing-price">39 <span>DKK/md</span></div>
+          <div class="pricing-price-label">Faktureres månedligt</div>
+          <hr class="pricing-divider" />
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> 1 projekt ad gangen</li>
+            <li><span class="check">✓</span> Simpel API-adgang</li>
+            <li><span class="check">✓</span> Stem-til-tilbud</li>
+            <li><span class="check">✓</span> Faggrupper & materialer</li>
+            <li><span class="check">✓</span> Dansk fagsprog</li>
+          </ul>
+          <a href="https://craft-2-offer.vercel.app/" class="pricing-cta pricing-cta--outline">Kom i gang gratis →</a>
+        </div>
+
+        <!-- Commercial -->
+        <div class="pricing-card pricing-card--featured">
+          <span class="pricing-badge">Mest populær</span>
+          <div class="pricing-name">Commercial</div>
+          <div class="pricing-price">399 <span>DKK/md</span></div>
+          <div class="pricing-price-label">Faktureres månedligt</div>
+          <hr class="pricing-divider" />
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> Ubegrænsede projekter</li>
+            <li><span class="check">✓</span> Avancerede API'er</li>
+            <li><span class="check">✓</span> Risikovurdering med scores</li>
+            <li><span class="check">✓</span> Underentreprenør-koordinering</li>
+            <li><span class="check">✓</span> Automatisk Gantt-plan</li>
+            <li><span class="check">✓</span> Eksport til vimpl-board</li>
+            <li><span class="check">✓</span> Prioriteret support</li>
+          </ul>
+          <a href="https://craft-2-offer.vercel.app/" class="pricing-cta pricing-cta--primary">Vælg Commercial →</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="pricing-card">
+          <div class="pricing-name">Enterprise</div>
+          <div class="pricing-price" style="font-size:1.6rem;padding-top:0.4rem;">Kontakt os</div>
+          <div class="pricing-price-label">Skræddersyet til jeres virksomhed</div>
+          <hr class="pricing-divider" />
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> Alle API'er</li>
+            <li><span class="check">✓</span> SSO & adgangsstyring</li>
+            <li><span class="check">✓</span> White-label mulighed</li>
+            <li><span class="check">✓</span> SLA-garanti</li>
+            <li><span class="check">✓</span> Dedikeret support</li>
+            <li><span class="check">✓</span> On-premise mulighed</li>
+          </ul>
+          <a href="mailto:kristian@vimpl.com" class="pricing-cta pricing-cta--outline">Kontakt os →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container" style="position:relative;z-index:1;">
+      <span class="tag">Gratis at komme i gang</span>
+      <h2>Lav dit første tilbud i dag</h2>
+      <p>Intet kreditkort. Ingen installation. Log ind med din vimpl-konto og kom i gang på under et minut.</p>
+      <div class="cta-actions">
+        <a href="https://craft-2-offer.vercel.app/" class="btn-primary">
+          Start med Aison gratis →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-logo">Aison</span>
+        <span class="footer-copy">© 2026 Aison — et vimpl-produkt</span>
+        <a href="https://www.vimpl.com" class="footer-link" target="_blank" rel="noopener noreferrer">vimpl.com →</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
