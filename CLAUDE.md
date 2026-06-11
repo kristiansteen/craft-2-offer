@@ -1,6 +1,7 @@
 # Aison / craft-2-offer — CLAUDE.md
 
 Vercel project: `craft-2-offer` → https://craft-2-offer.vercel.app
+GitHub repo: `kristiansteen/craft-2-offer` — auto-deploys from `main`. Never use `vercel --prod` manually.
 Stack: React + Tailwind + Vite. Entry: `src/main.jsx`. Build: `npm run dev` / `npm run build`.
 Brand name: **Aison** ("fra Vimpl"). Target audience: Danish tradespeople.
 
