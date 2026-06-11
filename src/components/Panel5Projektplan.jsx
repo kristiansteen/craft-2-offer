@@ -1,6 +1,5 @@
 import { useState } from 'react';
-
-const BACKEND_URL = 'https://backend-eight-rho-46.vercel.app';
+import { BACKEND_URL } from '../lib/api.js';
 
 function WeekBar({ tasks, totalWeeks = 8 }) {
   if (!tasks?.length) return null;
@@ -79,23 +78,28 @@ export default function Panel5Projektplan({
 
       const payload = {
         plan_name: projectPlan.name || jobBreakdown?.title || 'Projekt',
+        duration_weeks: Math.max(
+          ...((projectPlan.tasks || []).map(t => (t.startWeek || 1) + Math.ceil((t.durationDays || 5) / 5))),
+          4,
+        ),
         overview: projectPlan.overview || '',
         scope: jobBreakdown?.scope || '',
-        tracks: projectPlan.tracks || [],
+        tracks: (projectPlan.tracks || []).map(t => ({ id: t.id, name: t.name })),
         tasks: (projectPlan.tasks || []).map(t => ({
           id: t.id,
           title: t.name,
-          trackId: t.trackId,
-          assignee: t.assignee,
-          startWeek: t.startWeek,
-          durationDays: t.durationDays,
-          dependencies: t.dependencies || [],
-          notes: t.notes || '',
+          track_id: t.trackId,
+          owner: t.assignee || '',
+          week_start: t.startWeek || 1,
+          week_end: (t.startWeek || 1) + Math.max(0, Math.ceil((t.durationDays || 5) / 5) - 1),
         })),
-        risks: (projectPlan.risks || []).map(r => ({
-          description: r.description,
-          impact: r.impact,
-          mitigation: r.mitigation,
+        risks: ((jobBreakdown?.risks?.length ? jobBreakdown.risks : projectPlan.risks) || []).map(r => ({
+          id: r.id,
+          title: r.title || r.description || '',
+          description: r.title ? (r.description || '') : '',
+          probability: r.probability ?? 50,
+          consequence: r.consequence ?? 50,
+          mitigation: r.mitigation || '',
         })),
         invitees,
       };

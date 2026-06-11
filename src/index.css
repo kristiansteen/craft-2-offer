@@ -35,7 +35,7 @@
   }
 }
 
-.ailean-badge {
+.aison-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -46,17 +46,28 @@
   border-radius: 50px;
   transition: all 0.2s ease;
 }
-.ailean-badge:hover {
+.aison-badge:hover {
   background: rgba(101, 196, 52, 0.15);
   border-color: rgba(101, 196, 52, 0.5);
 }
-.ailean-badge span:first-child {
+.aison-badge span:first-child {
   font-size: 10px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+.aison-logo {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, #E67E22 0%, #F5A623 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Inter', sans-serif;
+}
+
 .vimpl-wordmark {
   font-family: 'Birthstone', cursive;
   font-size: 32px;

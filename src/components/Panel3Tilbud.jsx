@@ -4,7 +4,14 @@ function fmt(n) {
   return Number(n || 0).toLocaleString('da-DK', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
-export default function Panel3Tilbud({ offerLines, setOfferLines, jobBreakdown, loading, onNext, proxyAuth }) {
+function loadCvrData() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('aison_cvr_verification'));
+    return saved?.verified && saved?.dismissed ? saved : null;
+  } catch { return null; }
+}
+
+export default function Panel3Tilbud({ offerLines, setOfferLines, jobBreakdown, loading, onNext, proxyAuth, vimplUser }) {
   const [exportingPdf, setExportingPdf] = useState(false);
 
   if (loading && !offerLines) {
@@ -65,8 +72,9 @@ export default function Panel3Tilbud({ offerLines, setOfferLines, jobBreakdown, 
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const title = jobBreakdown?.title || 'Tilbud';
       const dateStr = new Date().toLocaleDateString('da-DK');
+      const cvr = loadCvrData();
 
-      // Header
+      // Header — title + date left, company info right
       doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
       doc.text('TILBUD', 20, 25);
@@ -76,6 +84,34 @@ export default function Panel3Tilbud({ offerLines, setOfferLines, jobBreakdown, 
       doc.text(title, 20, 33);
       doc.text(`Dato: ${dateStr}`, 20, 40);
       doc.text(`Gyldig: ${validDays} dage`, 20, 47);
+
+      // Company block (right side) — only if verified or at least user exists
+      if (cvr || vimplUser) {
+        doc.setTextColor(60);
+        let y = 25;
+        const x = 190;
+        if (cvr?.name) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.text(cvr.name, x, y, { align: 'right' });
+          y += 6;
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.text(`CVR ${cvr.cvr}`, x, y, { align: 'right' });
+          y += 5;
+        }
+        if (vimplUser?.name) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.text(vimplUser.name, x, y, { align: 'right' });
+          y += 5;
+        }
+        if (vimplUser?.email) {
+          doc.setFontSize(9);
+          doc.text(vimplUser.email, x, y, { align: 'right' });
+        }
+      }
+
       doc.setTextColor(0);
 
       // Table
