@@ -45,7 +45,7 @@ export default function RegisterPage({ onLogin, onSwitchToLogin }) {
 
   function handleGoogle() {
     const state = btoa(JSON.stringify({ origin: window.location.origin, source: 'craft2offer' }));
-    window.location.href = `${BACKEND_URL}/api/v1/auth/google?state=${state}`;
+    window.location.href = `${BACKEND_URL}/api/v1/auth/google?state=${encodeURIComponent(state)}`;
   }
 
   const strength = passwordStrength(password);
